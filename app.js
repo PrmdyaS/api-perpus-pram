@@ -17,7 +17,7 @@ connectToDb((err) => {
 })
 
 app.get('/', (req, res) => {
-    res.send('Selamat datang di API peram');
+    res.json({ msg: 'selamat datang di api peram' })
 })
 
 app.get('/books', (req, res) => {
