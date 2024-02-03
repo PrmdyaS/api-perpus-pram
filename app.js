@@ -16,6 +16,10 @@ connectToDb((err) => {
     }
 })
 
+app.get('/', (req, res) => {
+    res.send('Selamat datang di API peram');
+})
+
 app.get('/books', (req, res) => {
     const page = req.query.p || 0
     const booksPerPage = 2
