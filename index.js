@@ -25,7 +25,7 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = await db.collection('user').findOne({ email });
     if (!user) {
-        return res.status(401).json({ message: 'Email tidak ditemukan' + email + password + 'itu' });
+        return res.status(401).json({ message: 'Email tidak ditemukan' + req.body.email + password + 'itu' });
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
 
