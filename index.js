@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        return res.status(404).json({ error: 'User not found' + username + password });
+        return res.status(404).json({ message: 'User not found' + username + password });
 
         // Cari pengguna berdasarkan username
         const user = await db.collection('user').findOne({ username });
