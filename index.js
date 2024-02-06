@@ -2,6 +2,7 @@ const express = require('express')
 const { ObjectId } = require('mongodb')
 const { connectToDb, getDb } = require('./db')
 const bcrypt = require('bcrypt');
+const bodyParser = require('body-parser');
 
 const app = express()
 app.use(express.json())
@@ -21,8 +22,8 @@ app.get('/', (req, res) => {
     res.json({ msg: 'selamat datang di api pram' })
 })
 
-app.use(express.urlencoded({ extended: true }));
-
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     return res.status(401).json({ message: 'Email tidak ditemukan' + req.body.email + password + 'itu' });
