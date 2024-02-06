@@ -17,14 +17,18 @@ connectToDb((err) => {
     }
 })
 
-const userSchema = new mongoose.Schema({
-    email: String,
-    password: String
-});
-
-const User = mongoose.model('User', userSchema);
+app.get('/', (req, res) => {
+    res.json({ msg: 'selamat datang di api peram' })
+})
 
 app.post('/login', async (req, res) => {
+    const userSchema = new mongoose.Schema({
+        email: String,
+        password: String
+    });
+    
+    const User = mongoose.model('User', userSchema);
+    
     const { email, password } = req.body;
 
     try {
@@ -52,10 +56,6 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
-
-app.get('/', (req, res) => {
-    res.json({ msg: 'selamat datang di api peram' })
-})
 
 app.get('/user', (req, res) => {
     const page = req.query.p || 0
