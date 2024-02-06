@@ -23,10 +23,10 @@ app.get('/', (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
 
         // Cari pengguna berdasarkan username
-        const user = await db.collection('user').findOne({ username });
+        const user = await db.collection('user').findOne({ email });
 
         // Jika pengguna tidak ditemukan, kirim respons "user not found"
         if (!user) {
