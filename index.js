@@ -22,8 +22,8 @@ app.get('/', (req, res) => {
 })
 
 app.post('/login', async (req, res) => {
-    return res.status(401).json({ message: 'return ' + req.body.email + password + 'das' });
     const { email, password } = req.body;
+    return res.status(401).json({ message: 'return ' + req.body.email + password + 'das' });
     const user = await db.collection('user').findOne({ email });
     if (!user) {
         return res.status(401).json({ message: 'Email tidak ditemukan' + req.body.email + password + 'das' });
