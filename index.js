@@ -22,18 +22,32 @@ app.get('/', (req, res) => {
 })
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    const user = await db.collection('user').findOne({ email });
-    if (!user) {
-        return res.status(401).json({ message: 'Email tidak ditemukan' + req.body.email + password + 'das' });
-    }
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    try {
+        const { username, password } = req.body;
 
-    if (!passwordMatch) {
-        return res.status(401).json({ message: 'Password tidak cocok' });
-    }
+        // Cari pengguna berdasarkan username
+        const user = await db.collection('user').findOne({ username });
 
-    res.status(200).json({ message: 'Login berhasil' });
+        // Jika pengguna tidak ditemukan, kirim respons "user not found"
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Periksa apakah password cocok
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        // Jika password tidak cocok, kirim respons "password did not match"
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Password did not match' });
+        }
+
+        // Jika login berhasil, kirim respons "Login Success" beserta data pengguna
+        return res.status(200).json({ message: 'Login Success', user });
+    } catch (error) {
+        // Tangani kesalahan server
+        console.error('Internal server error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.get('/user', (req, res) => {
