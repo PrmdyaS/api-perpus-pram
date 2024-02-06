@@ -35,7 +35,7 @@ app.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'Password tidak cocok' });
     }
 
-    res.status(200).json({ message: 'Login berhasil' });
+    res.status(200).json({ message: user });
 });
 
 app.get('/user', (req, res) => {
