@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 
 const app = express()
 app.use(express.json())
+app.use(bodyParser.urlencoded({ extended: false }));
 
 
 let db
@@ -22,11 +23,9 @@ app.get('/', (req, res) => {
     res.json({ msg: 'selamat datang di api pram' })
 })
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 app.post('/login', async (req, res) => {
+    return res.status(401).json({ message: 'Email tidak ditemukan' + req.body.email + req.body.password + 'itu' });
     const { email, password } = req.body;
-    return res.status(401).json({ message: 'Email tidak ditemukan' + req.body.email + password + 'itu' });
     const user = await db.collection('user').findOne({ email });
     if (!user) {
         return res.status(401).json({ message: 'Email tidak ditemukan' + req.body.email + password + 'itu' });
