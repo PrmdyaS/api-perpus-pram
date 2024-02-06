@@ -18,7 +18,7 @@ connectToDb((err) => {
 })
 
 app.get('/', (req, res) => {
-    res.json({ msg: 'selamat datang di api user' })
+    res.json({ msg: 'selamat datang di api pram' })
 })
 
 app.post('/login', async (req, res) => {
