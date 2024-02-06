@@ -21,42 +21,6 @@ app.get('/', (req, res) => {
     res.json({ msg: 'selamat datang di api peram' })
 })
 
-app.post('/login', async (req, res) => {
-    const userSchema = new mongoose.Schema({
-        email: String,
-        password: String
-    });
-    
-    const User = mongoose.model('User', userSchema);
-    
-    const { email, password } = req.body;
-
-    try {
-        // Mencari pengguna berdasarkan email
-        const user = await User.findOne({ email });
-
-        // Jika pengguna tidak ditemukan
-        if (!user) {
-            return res.status(401).json({ message: 'Email tidak ditemukan' });
-        }
-
-        // Memeriksa kecocokan password
-        const passwordMatch = await compare(password, user.password);
-
-        // Jika password tidak cocok
-        if (!passwordMatch) {
-            return res.status(401).json({ message: 'email dengan password tidak cocok' });
-        }
-
-        // Jika login berhasil
-        res.status(200).json({ message: 'Login berhasil' });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Terjadi kesalahan server' });
-    }
-});
-
 app.get('/user', (req, res) => {
     const page = req.query.p || 0
     const userPerPage = 10
