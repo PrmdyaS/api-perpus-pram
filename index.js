@@ -1,7 +1,7 @@
 const express = require('express')
 const { ObjectId } = require('mongodb')
 const { connectToDb, getDb } = require('./db')
-const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const app = express()
 app.use(express.json())
@@ -18,8 +18,23 @@ connectToDb((err) => {
 })
 
 app.get('/', (req, res) => {
-    res.json({ msg: 'selamat datang di api peram' })
+    res.json({ msg: 'selamat datang di api user' })
 })
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    const user = await db.collection('user').findOne({ email });
+    if (!user) {
+        return res.status(401).json({ message: 'Email tidak ditemukan' });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+        return res.status(401).json({ message: 'Password tidak cocok' });
+    }
+
+    res.status(200).json({ message: 'Login berhasil' });
+});
 
 app.get('/user', (req, res) => {
     const page = req.query.p || 0
@@ -57,17 +72,17 @@ app.get('/user/:id', (req, res) => {
     }
 })
 
-app.post('/user', (req, res) => {
-    const user = req.body
-
-    db.collection('user')
-        .insertOne(user)
-        .then(result => {
-            res.status(201).json(result)
-        })
-        .catch(err => {
-            res.status(500).json({ err: 'Could not create a new document' })
-        })
+app.post('/user', async (req, res) => {
+    const saltRounds = 10;
+    const user = req.body;
+    try {
+        const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+        user.password = hashedPassword;
+        const result = await db.collection('user').insertOne(user);
+        res.status(201).json(result);
+    } catch (err) {
+        res.status(500).json({ error: 'Could not create a new document' });
+    }
 })
 
 app.delete('/user/:id', (req, res) => {
