@@ -1,6 +1,7 @@
 const express = require('express')
 const { ObjectId } = require('mongodb')
 const { connectToDb, getDb } = require('./db')
+const mongoose = require('mongoose');
 
 const app = express()
 app.use(express.json())
@@ -15,6 +16,42 @@ connectToDb((err) => {
         db = getDb()
     }
 })
+
+const userSchema = new mongoose.Schema({
+    username: String,
+    password: String
+});
+
+const User = mongoose.model('User', userSchema);
+
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Mencari pengguna berdasarkan username
+        const user = await User.findOne({ username });
+
+        // Jika pengguna tidak ditemukan
+        if (!user) {
+            return res.status(401).json({ message: 'Pengguna tidak ditemukan' });
+        }
+
+        // Memeriksa kecocokan password
+        const passwordMatch = await compare(password, user.password);
+
+        // Jika password tidak cocok
+        if (!passwordMatch) {
+            return res.status(401).json({ message: 'Username dengan password tidak cocok' });
+        }
+
+        // Jika login berhasil
+        res.status(200).json({ message: 'Login berhasil' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Terjadi kesalahan server' });
+    }
+});
 
 app.get('/', (req, res) => {
     res.json({ msg: 'selamat datang di api peram' })
@@ -88,7 +125,7 @@ app.patch('/user/:id', (req, res) => {
     const updates = req.body
     if (ObjectId.isValid(req.params.id)) {
         db.collection('user')
-            .updateOne({ _id: new ObjectId(req.params.id)}, {$set: updates})
+            .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
             .then(result => {
                 res.status(200).json(result)
             })
