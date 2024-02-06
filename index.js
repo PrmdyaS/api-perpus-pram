@@ -18,22 +18,22 @@ connectToDb((err) => {
 })
 
 const userSchema = new mongoose.Schema({
-    username: String,
+    email: String,
     password: String
 });
 
 const User = mongoose.model('User', userSchema);
 
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     try {
-        // Mencari pengguna berdasarkan username
-        const user = await User.findOne({ username });
+        // Mencari pengguna berdasarkan email
+        const user = await User.findOne({ email });
 
         // Jika pengguna tidak ditemukan
         if (!user) {
-            return res.status(401).json({ message: 'Pengguna tidak ditemukan' });
+            return res.status(401).json({ message: 'Email tidak ditemukan' });
         }
 
         // Memeriksa kecocokan password
@@ -41,7 +41,7 @@ app.post('/login', async (req, res) => {
 
         // Jika password tidak cocok
         if (!passwordMatch) {
-            return res.status(401).json({ message: 'Username dengan password tidak cocok' });
+            return res.status(401).json({ message: 'email dengan password tidak cocok' });
         }
 
         // Jika login berhasil
