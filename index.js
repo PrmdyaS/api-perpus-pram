@@ -37,7 +37,8 @@ app.post('/login', async (req, res) => {
 
     res.status(200).json(
         { 
-            status: "success",
+            message: "success",
+            status: 200,
             data: user 
         }
     );
@@ -87,6 +88,13 @@ app.post('/user', async (req, res) => {
         user.password = hashedPassword;
         const result = await db.collection('user').insertOne(user);
         res.status(201).json(result);
+        res.status(201).json(
+            { 
+                message: "success",
+                status: 201,
+                data: result 
+            }
+        );
     } catch (err) {
         res.status(500).json({ error: 'Could not create a new document' });
     }
