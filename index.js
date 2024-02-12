@@ -87,10 +87,10 @@ app.post('/user', async (req, res) => {
         const hashedPassword = await bcrypt.hash(user.password, saltRounds);
         user.password = hashedPassword;
         const result = await db.collection('user').insertOne(user);
-        res.status(201).json(result);
         res.status(201).json(
             { 
                 message: "success",
+                status: 201,
                 data: result 
             }
         );
