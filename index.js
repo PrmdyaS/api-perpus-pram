@@ -91,7 +91,6 @@ app.post('/user', async (req, res) => {
         res.status(201).json(
             { 
                 message: "success",
-                status: 201,
                 data: result 
             }
         );
