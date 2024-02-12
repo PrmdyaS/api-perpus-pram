@@ -95,13 +95,6 @@ app.post('/user', async (req, res) => {
                 data: dataUser
             }
         );
-        res.status(201).json(
-            {
-                message: "success",
-                status: 201,
-                data: result
-            }
-        );
     } catch (err) {
         res.status(500).json({ error: 'Could not create a new document' });
     }
