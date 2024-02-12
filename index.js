@@ -36,10 +36,10 @@ app.post('/login', async (req, res) => {
     }
 
     res.status(200).json(
-        { 
+        {
             message: "success",
             status: 200,
-            data: user 
+            data: user
         }
     );
 });
@@ -87,11 +87,19 @@ app.post('/user', async (req, res) => {
         const hashedPassword = await bcrypt.hash(user.password, saltRounds);
         user.password = hashedPassword;
         const result = await db.collection('user').insertOne(user);
+        const dataUser = await db.collection('user').findOne(user);
+        res.status(200).json(
+            {
+                message: "success",
+                status: 200,
+                data: dataUser
+            }
+        );
         res.status(201).json(
-            { 
+            {
                 message: "success",
                 status: 201,
-                data: result 
+                data: result
             }
         );
     } catch (err) {
