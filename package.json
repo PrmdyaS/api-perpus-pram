@@ -2,7 +2,7 @@
   "name": "api-perpus-pram",
   "version": "1.0.0",
   "description": "",
-  "main": "tes.js",
+  "main": "index.js",
   "engines": {
     "node": "18.x"
   },
