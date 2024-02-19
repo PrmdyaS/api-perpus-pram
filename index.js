@@ -1,6 +1,6 @@
 const express = require('express')
-const { connectToDb } = require('./db')
-const usersRoutes = require('./routes/users')
+const { connectToDb } = require('./src/db')
+const usersRoutes = require('./src/routes/users')
 
 const app = express()
 app.use(express.json())
