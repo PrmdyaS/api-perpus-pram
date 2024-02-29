@@ -6,6 +6,10 @@ const upload = multer({storage: multer.memoryStorage()})
 
 router.get('/', booksController.getAllBooks)
 
+router.get('/rating-tertinggi', booksController.getBooksRatingTertinggi)
+
+router.get('/terbaru', booksController.getBooksTerbaru)
+
 router.post('/', upload.single('sampul_buku'), booksController.postBooks)
 
 router.get('/:id', booksController.getOneBooks)

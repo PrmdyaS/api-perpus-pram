@@ -3,6 +3,9 @@ const bcrypt = require('bcrypt');
 const { ObjectId } = require('mongodb')
 const firebase = require('firebase/app')
 const { getStorage, ref, uploadBytesResumable, getDownloadURL } = require('firebase/storage')
+const moment = require('moment-timezone');
+
+moment.tz.setDefault('Asia/Jakarta');
 
 let db
 connectToDb((err) => {
@@ -25,27 +28,85 @@ firebase.initializeApp(firebaseConfig)
 const storage = getStorage();
 
 const getAllBooks = (req, res) => {
-    let books = []
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const penerbit = req.query.penerbit;
+    let query = {};
+    if (penerbit) {
+        query = { penerbit: penerbit };
+    }
+
+    let books = [];
     db.collection('books')
-        .find()
+        .find(query)
         .sort({ judul: 1 })
+        .skip(skip)
+        .limit(limit)
         .forEach(book => books.push(book))
         .then(() => {
-            res.status(200).json(
-                {
-                    message: "success",
-                    status: 200,
-                    data: books
-                }
-            )
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: books
+            });
         })
         .catch(() => {
-            res.status(500).json({ error: 'Could not fetch the documents' })
-        })
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
 }
 
+const getBooksRatingTertinggi = (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let books = [];
+    db.collection('books')
+        .find()
+        .sort({ rating: -1 })
+        .skip(skip)
+        .limit(limit)
+        .forEach(book => books.push(book))
+        .then(() => {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: books
+            });
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
+};
+
+const getBooksTerbaru = (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let books = [];
+    db.collection('books')
+        .find()
+        .sort({ created_at: -1 })
+        .skip(skip)
+        .limit(limit)
+        .forEach(book => books.push(book))
+        .then(() => {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: books
+            });
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
+};
+
+
 const postBooks = async (req, res) => {
-    const { judul, penulis, penerbit, tahun_terbit, deskripsi_buku } = req.body;
+    const { judul, penulis, penerbit, tahun_terbit, deskripsi_buku, rating } = req.body;
     const filename = Date.now().toString() + "." + req.file.originalname.split('.').pop();
     const storageRef = ref(storage, `cover-book/${filename}`);
     try {
@@ -61,7 +122,10 @@ const postBooks = async (req, res) => {
             tahun_terbit,
             deskripsi_buku,
             sampul_buku: downloadURL,
+            rating,
         };
+        newBook.created_at = createdAt;
+        newBook.updated_at = createdAt;
         const result = await db.collection('books').insertOne(newBook);
         res.json({
             message: "Tambah buku berhasil",
@@ -94,6 +158,8 @@ const getOneBooks = (req, res) => {
 
 const updateOneBooks = (req, res) => {
     const updates = req.body
+    const createdAt = moment().format();
+    updates.updated_at = createdAt;
     if (ObjectId.isValid(req.params.id)) {
         db.collection('books')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
@@ -154,6 +220,8 @@ const loginUsers = async (req, res) => {
 
 module.exports = {
     getAllBooks,
+    getBooksRatingTertinggi,
+    getBooksTerbaru,
     postBooks,
     getOneBooks,
     updateOneBooks,
