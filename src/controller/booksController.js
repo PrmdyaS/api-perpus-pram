@@ -109,6 +109,7 @@ const postBooks = async (req, res) => {
     const { judul, penulis, penerbit, tahun_terbit, deskripsi_buku, rating } = req.body;
     const filename = Date.now().toString() + "." + req.file.originalname.split('.').pop();
     const storageRef = ref(storage, `cover-book/${filename}`);
+    const moments = moment().format();
     try {
         const metadata = {
             contentType: req.file.mimetype,
@@ -123,9 +124,9 @@ const postBooks = async (req, res) => {
             deskripsi_buku,
             sampul_buku: downloadURL,
             rating,
+            created_at: moments,
+            updated_at: moments,
         };
-        newBook.created_at = createdAt;
-        newBook.updated_at = createdAt;
         const result = await db.collection('books').insertOne(newBook);
         res.json({
             message: "Tambah buku berhasil",
@@ -158,8 +159,8 @@ const getOneBooks = (req, res) => {
 
 const updateOneBooks = (req, res) => {
     const updates = req.body
-    const createdAt = moment().format();
-    updates.updated_at = createdAt;
+    const moments = moment().format();
+    updates.updated_at = moments;
     if (ObjectId.isValid(req.params.id)) {
         db.collection('books')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
@@ -197,27 +198,6 @@ const deleteOneBooks = (req, res) => {
     }
 }
 
-const loginUsers = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await db.collection('user').findOne({ email });
-    if (!user) {
-        return res.status(401).json({ message: 'Email tidak ditemukan' });
-    }
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-        return res.status(401).json({ message: 'Password tidak cocok' });
-    }
-
-    res.status(200).json(
-        {
-            message: "Login Success",
-            status: 200,
-            data: user
-        }
-    );
-}
-
 module.exports = {
     getAllBooks,
     getBooksRatingTertinggi,
@@ -226,5 +206,4 @@ module.exports = {
     getOneBooks,
     updateOneBooks,
     deleteOneBooks,
-    loginUsers,
 }
