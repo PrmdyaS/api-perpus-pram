@@ -74,10 +74,17 @@ const getAllFavorites = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const user_id = req.query.users_id;
+    const book_id = req.query.books_id;
+    let query = {};
+    if (user_id && book_id) {
+        query = { books_id: new ObjectId(book_id), users_id: new ObjectId(user_id) };
+    }
     try {
         const cursor = db.collection('favorites').aggregate([
             { $skip: skip },
             { $limit: limit },
+            { $match: query },
             {
                 $lookup: {
                     from: 'books',
@@ -95,7 +102,7 @@ const getAllFavorites = async (req, res) => {
                         }
                     ]
                 }
-            }
+            },
         ]);
         const favorites = await cursor.toArray();
 
@@ -117,10 +124,24 @@ const postFavorites = async (req, res) => {
     const favorite = {
         books_id: new ObjectId(books_id),
         users_id: new ObjectId(users_id),
-        created_atz: moments,
+        created_at: moments,
         updated_at: moments
     }
+
     try {
+        const existingFavorite = await db.collection('favorites').findOne({
+            books_id: new ObjectId(books_id),
+            users_id: new ObjectId(users_id)
+        });
+
+        if (existingFavorite) {
+            return res.status(201).json({
+                message: "Favorit sudah ada",
+                status: 201,
+                data: existingFavorite,
+            });
+        }
+
         const result = await db.collection('favorites').insertOne(favorite);
         res.json({
             message: "Tambah favorit berhasil",
@@ -131,6 +152,7 @@ const postFavorites = async (req, res) => {
         res.status(500).json({ error: 'Terjadi kesalahan saat menambahkan favorit' });
     }
 }
+
 
 const getUsersFavorites = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
