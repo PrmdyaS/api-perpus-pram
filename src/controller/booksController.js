@@ -1,5 +1,4 @@
 const { connectToDb, getDb } = require('../db')
-const bcrypt = require('bcrypt');
 const { ObjectId } = require('mongodb')
 const firebase = require('firebase/app')
 const { getStorage, ref, uploadBytesResumable, getDownloadURL } = require('firebase/storage')

@@ -12,64 +12,6 @@ connectToDb((err) => {
     }
 })
 
-// const getAllFavorites = (req, res) => {
-// const page = parseInt(req.query.page) || 1;
-// const limit = parseInt(req.query.limit) || 10;
-// const skip = (page - 1) * limit;
-
-//     let favorites = [];
-//     db.collection('favorites')
-//         .find()
-//         .sort({ _id: 1 })
-//         .skip(skip)
-//         .limit(limit)
-//         .forEach(favorite => favorites.push(favorite))
-//         .then(() => {
-//             res.status(200).json({
-//                 message: "success",
-//                 status: 200,
-//                 data: favorites
-//             });
-//         })
-//         .catch(() => {
-//             res.status(500).json({ error: 'Could not fetch the documents' });
-//         });
-
-// }
-
-// const getAllFavorites = (req, res) => {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const skip = (page - 1) * limit;
-
-//     try {
-//         db.collection('favorites').aggregate([
-//             { $skip: skip },
-//             { $limit: limit },
-//             {
-//                 $lookup: {
-//                     from: 'books', // Nama koleksi yang akan Anda join
-//                     localField: 'books_id', // Field di koleksi favorites
-//                     foreignField: '_id', // Field di koleksi books
-//                     as: 'bookData' // Nama field untuk menyimpan hasil join
-//                 }
-//             }
-//         ]).toArray((err, favorites) => {
-//             if (err) {
-//                 res.status(500).json({ error: 'Could not fetch the documents' });
-//             } else {
-//                 res.status(200).json({
-//                     message: "success",
-//                     status: 200,
-//                     data: favorites
-//                 });
-//             }
-//         });
-//     } catch (error) {
-//         res.status(500).json({ error: 'Terjadi kesalahan saat menambahkan favorit' });
-//     }
-// }
-
 const getAllFavorites = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;

@@ -2,14 +2,18 @@ const express = require('express')
 const { connectToDb } = require('./src/db')
 const usersRoutes = require('./src/routes/users')
 const booksRoutes = require('./src/routes/books')
-const favoriteRoutes = require('./src/routes/favorites')
+const favoritesRoutes = require('./src/routes/favorites')
+const categoriesRoutes = require('./src/routes/categories')
+const subCategoriesRoutes = require('./src/routes/subCategories')
 
 const app = express()
 app.use(express.json())
 
 app.use('/users', usersRoutes)
 app.use('/books', booksRoutes)
-app.use('/favorites', favoriteRoutes)
+app.use('/favorites', favoritesRoutes)
+app.use('/categories', categoriesRoutes)
+app.use('/sub-categories', subCategoriesRoutes)
 
 connectToDb((err) => {
     if (!err) {
