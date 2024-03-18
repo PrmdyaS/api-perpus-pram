@@ -6,8 +6,8 @@ router.get('/', BorrowBooksController.getAllBorrowBooks)
 
 router.post('/', BorrowBooksController.postAllBorrowBooks)
 
-router.patch('/:id', BorrowBooksController.updateOneSubCategories)
+router.patch('/:id', BorrowBooksController.updateOneBorrowBooks)
 
-router.delete('/:id', BorrowBooksController.deleteOneSubCategories)
+router.delete('/:id', BorrowBooksController.deleteOneBorrowBooks)
 
 module.exports = router

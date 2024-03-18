@@ -93,10 +93,10 @@ const postAllBorrowBooks = async (req, res) => {
     }
 }
 
-const updateOneSubCategories = (req, res) => {
+const updateOneBorrowBooks = (req, res) => {
     const updates = req.body
     if (ObjectId.isValid(req.params.id)) {
-        db.collection('sub_categories')
+        db.collection('borrow_books')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
             .then(result => {
                 res.status(200).json({
@@ -113,9 +113,9 @@ const updateOneSubCategories = (req, res) => {
     }
 }
 
-const deleteOneSubCategories = (req, res) => {
+const deleteOneBorrowBooks = (req, res) => {
     if (ObjectId.isValid(req.params.id)) {
-        db.collection('sub_categories')
+        db.collection('borrow_books')
             .deleteOne({ _id: new ObjectId(req.params.id) })
             .then(result => {
                 res.status(200).json({
@@ -135,6 +135,6 @@ const deleteOneSubCategories = (req, res) => {
 module.exports = {
     getAllBorrowBooks,
     postAllBorrowBooks,
-    updateOneSubCategories,
-    deleteOneSubCategories,
+    updateOneBorrowBooks,
+    deleteOneBorrowBooks,
 }
