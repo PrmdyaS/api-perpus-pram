@@ -10,6 +10,10 @@ router.get('/rating-tertinggi', booksController.getBooksRatingTertinggi)
 
 router.get('/terbaru', booksController.getBooksTerbaru)
 
+router.get('/search', booksController.searchBooks)
+
+router.get('/search-data', booksController.searchDataBooks)
+
 router.post('/', upload.single('sampul_buku'), booksController.postBooks)
 
 router.get('/:id', booksController.getOneBooks)

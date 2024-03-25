@@ -120,8 +120,26 @@ const getUsersFavorites = async (req, res) => {
                                         ]
                                     }
                                 }
+                            },
+                            {
+                                $project: {
+                                    _id: 1,
+                                    judul: 1,
+                                    penulis: 1,
+                                    penerbit: 1,
+                                    sampul_buku: 1,
+                                    rating: 1
+                                }
                             }
                         ]
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        books_id: 1,
+                        users_id: 1,
+                        books: { $arrayElemAt: ["$books", 0] }
                     }
                 }
             ]);

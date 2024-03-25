@@ -42,7 +42,85 @@ const getAllBooks = (req, res) => {
         .sort({ judul: 1 })
         .skip(skip)
         .limit(limit)
-        .forEach(book => books.push(book))
+        .forEach(book => {
+            books.push({
+                _id: book._id,
+                judul: book.judul,
+                penulis: book.penulis,
+                penerbit: book.penerbit,
+                sampul_buku: book.sampul_buku,
+                rating: book.rating,
+            });
+        })
+        .then(() => {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: books
+            });
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
+}
+
+const searchBooks = (req, res) => {
+    const q = req.query.q;
+    let query = {};
+    if (q) {
+        query = {
+            $or: [
+                { judul: { $regex: q, $options: 'i' } }, // Cari dalam judul
+                { penerbit: { $regex: q, $options: 'i' } }, // Cari dalam penerbit
+                { penulis: { $regex: q, $options: 'i' } } // Cari dalam penulis
+            ]
+        };
+    }
+
+    let books = [];
+    db.collection('books')
+        .find(query)
+        .sort({ judul: 1 })
+        .forEach(book => books.push(book.judul))
+        .then(() => {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: books
+            });
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
+}
+
+const searchDataBooks = (req, res) => {
+    const q = req.query.q;
+    let query = {};
+    if (q) {
+        query = {
+            $or: [
+                { judul: { $regex: q, $options: 'i' } },
+                { penerbit: { $regex: q, $options: 'i' } },
+                { penulis: { $regex: q, $options: 'i' } }
+            ]
+        };
+    }
+
+    let books = [];
+    db.collection('books')
+        .find(query)
+        .sort({ judul: 1 })
+        .forEach(book => {
+            books.push({
+                _id: book._id,
+                judul: book.judul,
+                penulis: book.penulis,
+                penerbit: book.penerbit,
+                sampul_buku: book.sampul_buku,
+                rating: book.rating,
+            });
+        })
         .then(() => {
             res.status(200).json({
                 message: "success",
@@ -66,7 +144,16 @@ const getBooksRatingTertinggi = (req, res) => {
         .sort({ rating: -1 })
         .skip(skip)
         .limit(limit)
-        .forEach(book => books.push(book))
+        .forEach(book => {
+            books.push({
+                _id: book._id,
+                judul: book.judul,
+                penulis: book.penulis,
+                penerbit: book.penerbit,
+                sampul_buku: book.sampul_buku,
+                rating: book.rating,
+            });
+        })
         .then(() => {
             res.status(200).json({
                 message: "success",
@@ -90,7 +177,16 @@ const getBooksTerbaru = (req, res) => {
         .sort({ created_at: -1 })
         .skip(skip)
         .limit(limit)
-        .forEach(book => books.push(book))
+        .forEach(book => {
+            books.push({
+                _id: book._id,
+                judul: book.judul,
+                penulis: book.penulis,
+                penerbit: book.penerbit,
+                sampul_buku: book.sampul_buku,
+                rating: book.rating,
+            });
+        })
         .then(() => {
             res.status(200).json({
                 message: "success",
@@ -136,7 +232,7 @@ const postBooks = async (req, res) => {
         res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku' });
     }
 }
-    
+
 const getOneBooks = (req, res) => {
     if (ObjectId.isValid(req.params.id)) {
         db.collection('books')
@@ -205,4 +301,6 @@ module.exports = {
     getOneBooks,
     updateOneBooks,
     deleteOneBooks,
+    searchBooks,
+    searchDataBooks,
 }
