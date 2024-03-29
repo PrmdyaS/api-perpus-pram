@@ -13,29 +13,6 @@ const getAllBorrowBooks = async (req, res) => {
         const cursor = db.collection('borrow_books').aggregate([
             {
                 $lookup: {
-                    from: 'user',
-                    as: 'users',
-                    let: { usersId: "$users_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$_id", "$$usersId"] }
-                                    ]
-                                }
-                            }
-                        },
-                    ]
-                },
-            },
-            {
-                $set: {
-                    users: { $arrayElemAt: ["$users", 0] }
-                }
-            },
-            {
-                $lookup: {
                     from: 'books',
                     as: 'books',
                     let: { booksId: "$books_id" },
@@ -47,6 +24,16 @@ const getAllBorrowBooks = async (req, res) => {
                                         { $eq: ["$_id", "$$booksId"] }
                                     ]
                                 }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 1,
+                                judul: 1,
+                                penulis: 1,
+                                penerbit: 1,
+                                sampul_buku: 1,
+                                rating: 1,
                             }
                         }
                     ]

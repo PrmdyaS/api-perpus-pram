@@ -9,24 +9,50 @@ connectToDb((err) => {
     }
 })
 
-const getAllUsers = (req, res) => {
-    let user = []
-    db.collection('user')
-        .find()
-        .sort({ email: 1 })
-        .forEach(users => user.push(users))
-        .then(() => {
-            res.status(200).json(
-                {
-                    message: "success",
-                    status: 200,
-                    data: user
+const getAllUsers = async (req, res) => {
+    try {
+        const cursor = db.collection('user').aggregate([
+            {
+                $lookup: {
+                    from: 'roles',
+                    as: 'roles',
+                    let: { indexLevelRoles: "$index_level_roles" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$index_level", "$$indexLevelRoles"] }
+                                    ]
+                                }
+                            }
+                        },
+                    ]
                 }
-            )
-        })
-        .catch(() => {
-            res.status(500).json({ error: 'Could not fetch the documents' })
-        })
+            },
+            {
+                $set: {
+                    roles: { $arrayElemAt: ["$roles", 0] }
+                }
+            },
+            {
+                $project: {
+                    password: 0
+                }
+            }
+        ]);
+        const users = await cursor.toArray();
+
+        if (users) {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: users
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not find the document' });
+    }
 }
 
 const postUsers = async (req, res) => {
@@ -148,6 +174,8 @@ const loginUsers = async (req, res) => {
     if (!passwordMatch) {
         return res.status(401).json({ message: 'Password tidak cocok' });
     }
+
+    delete user.password;
 
     res.status(200).json(
         {
