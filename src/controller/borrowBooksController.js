@@ -112,6 +112,7 @@ const getOneBorrowBooks = async (req, res) => {
                             {
                                 $project: {
                                     judul: 1,
+                                    sampul_buku: 1,
                                 }
                             }
                         ]
