@@ -6,6 +6,8 @@ router.get('/', BorrowBooksController.getAllBorrowBooks)
 
 router.post('/', BorrowBooksController.postAllBorrowBooks)
 
+router.get('/:id', BorrowBooksController.getOneBorrowBooks)
+
 router.patch('/:id', BorrowBooksController.updateOneBorrowBooks)
 
 router.delete('/:id', BorrowBooksController.deleteOneBorrowBooks)
