@@ -128,9 +128,9 @@ const getOneBorrowBooks = async (req, res) => {
                         users_id: 0,
                         books_id: 0
                     }
-                }
+                },
             ]);
-            const borrowBooks = await cursor.toArray();
+            const borrowBooks = await cursor.next();
             if (borrowBooks) {
                 res.status(200).json({
                     message: "success",
