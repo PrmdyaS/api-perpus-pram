@@ -59,6 +59,66 @@ const getAllBorrowBooks = async (req, res) => {
     }
 }
 
+const getBorrowBooksUsers = async (req, res) => {
+    try {
+        if (ObjectId.isValid(req.params.id)) {
+            const cursor = db.collection('borrow_books').aggregate([
+                {
+                    $match: { users_id: new ObjectId(req.params.id) }
+                },
+                {
+                    $lookup: {
+                        from: 'books',
+                        as: 'books',
+                        let: { booksId: "$books_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$_id", "$$booksId"] }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                $project: {
+                                    judul: 1,
+                                    penulis: 1,
+                                    sampul_buku: 1,
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    $set: {
+                        books: { $arrayElemAt: ["$books", 0] }
+                    }
+                },
+                {
+                    $project: {
+                        users_id: 0,
+                        books_id: 0
+                    }
+                },
+            ]);
+            const borrowBooks = await cursor.toArray();
+            if (borrowBooks) {
+                res.status(200).json({
+                    message: "success",
+                    status: 200,
+                    data: borrowBooks
+                });
+            }
+        } else {
+            res.status(500).json({ error: 'Not a valid document id' })
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not find the document' });
+    }
+}
+
 const getOneBorrowBooks = async (req, res) => {
     try {
         if (ObjectId.isValid(req.params.id)) {
@@ -209,6 +269,7 @@ const deleteOneBorrowBooks = (req, res) => {
 module.exports = {
     getAllBorrowBooks,
     postAllBorrowBooks,
+    getBorrowBooksUsers,
     getOneBorrowBooks,
     updateOneBorrowBooks,
     deleteOneBorrowBooks,
