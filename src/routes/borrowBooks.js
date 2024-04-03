@@ -8,6 +8,8 @@ router.post('/', BorrowBooksController.postAllBorrowBooks)
 
 router.get('/users/:id', BorrowBooksController.getBorrowBooksUsers)
 
+router.get('/history/users/:id', BorrowBooksController.getHistoryBorrowBooksUsers)
+
 router.get('/:id', BorrowBooksController.getOneBorrowBooks)
 
 router.patch('/:id', BorrowBooksController.updateOneBorrowBooks)

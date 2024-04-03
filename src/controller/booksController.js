@@ -70,9 +70,9 @@ const searchBooks = (req, res) => {
     if (q) {
         query = {
             $or: [
-                { judul: { $regex: q, $options: 'i' } }, // Cari dalam judul
-                { penerbit: { $regex: q, $options: 'i' } }, // Cari dalam penerbit
-                { penulis: { $regex: q, $options: 'i' } } // Cari dalam penulis
+                { judul: { $regex: q, $options: 'i' } },
+                { penerbit: { $regex: q, $options: 'i' } },
+                { penulis: { $regex: q, $options: 'i' } }
             ]
         };
     }
