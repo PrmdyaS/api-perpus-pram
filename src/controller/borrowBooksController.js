@@ -64,7 +64,7 @@ const getBorrowBooksUsers = async (req, res) => {
         if (ObjectId.isValid(req.params.id)) {
             const cursor = db.collection('borrow_books').aggregate([
                 {
-                    $match: { users_id: new ObjectId(req.params.id) }
+                    $match: { users_id: new ObjectId(req.params.id), status: { $in: ["Dipinjam", "Denda", "Menunggu Verifikasi"] } }
                 },
                 {
                     $lookup: {
@@ -101,6 +101,9 @@ const getBorrowBooksUsers = async (req, res) => {
                         users_id: 0,
                         books_id: 0
                     }
+                },
+                {
+                    $sort: { createdAt: -1 }
                 },
             ]);
             const borrowBooks = await cursor.toArray();
