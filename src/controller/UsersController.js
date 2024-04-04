@@ -1,6 +1,8 @@
 const { connectToDb, getDb } = require('../db')
 const bcrypt = require('bcrypt');
 const { ObjectId } = require('mongodb')
+const firebase = require('firebase/app')
+const { getStorage, ref, uploadBytesResumable, getDownloadURL } = require('firebase/storage')
 
 let db
 connectToDb((err) => {
@@ -8,6 +10,18 @@ connectToDb((err) => {
         db = getDb()
     }
 })
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAs9mhKG_PzO9yzZIPafT1MCMOF1GgF0IY",
+    authDomain: "perpus-pram.firebaseapp.com",
+    projectId: "perpus-pram",
+    storageBucket: "perpus-pram.appspot.com",
+    messagingSenderId: "928477389217",
+    appId: "1:928477389217:web:2e7d0f0bd2271814b06be0",
+    measurementId: "G-QVK4YNSPFW"
+};
+firebase.initializeApp(firebaseConfig)
+const storage = getStorage();
 
 const getAllUsers = async (req, res) => {
     try {
@@ -109,79 +123,106 @@ const postUsers = async (req, res) => {
 
 const getOneUsers = async (req, res) => {
     if (ObjectId.isValid(req.params.id)) {
-            try {
-                const cursor = db.collection('user').aggregate([
-                    {
-                        $match: { _id: new ObjectId(req.params.id) }
-                    },
-                    {
-                        $lookup: {
-                            from: 'roles',
-                            as: 'roles',
-                            let: { indexLevelRoles: "$index_level_roles" },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                { $eq: ["$index_level", "$$indexLevelRoles"] }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    $project: {
-                                        index_level: 0
+        try {
+            const cursor = db.collection('user').aggregate([
+                {
+                    $match: { _id: new ObjectId(req.params.id) }
+                },
+                {
+                    $lookup: {
+                        from: 'roles',
+                        as: 'roles',
+                        let: { indexLevelRoles: "$index_level_roles" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$index_level", "$$indexLevelRoles"] }
+                                        ]
                                     }
                                 }
-                            ]
-                        }
-                    },
-                    {
-                        $set: {
-                            roles: { $arrayElemAt: ["$roles", 0] }
-                        }
-                    },
-                    {
-                        $project: {
-                            email: 0,
-                            password: 0,
-                            index_level_roles: 0
-                        }
+                            },
+                            {
+                                $project: {
+                                    index_level: 0
+                                }
+                            }
+                        ]
                     }
-                ]);
-                const users = await cursor.next();
-        
-                if (users) {
-                    res.status(200).json({
-                        message: "success",
-                        status: 200,
-                        data: users
-                    });
+                },
+                {
+                    $set: {
+                        roles: { $arrayElemAt: ["$roles", 0] }
+                    }
+                },
+                {
+                    $project: {
+                        email: 0,
+                        password: 0,
+                        index_level_roles: 0
+                    }
                 }
-            } catch (error) {
-                res.status(500).json({ error: 'Could not find the document' });
+            ]);
+            const users = await cursor.next();
+
+            if (users) {
+                res.status(200).json({
+                    message: "success",
+                    status: 200,
+                    data: users
+                });
             }
+        } catch (error) {
+            res.status(500).json({ error: 'Could not find the document' });
+        }
     } else {
         res.status(500).json({ error: 'Not a valid document id' })
     }
 }
 
-const updateOneUsers = (req, res) => {
+const updateOneUsers = async (req, res) => {
     const updates = req.body
     if (ObjectId.isValid(req.params.id)) {
-        db.collection('user')
-            .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
-            .then(result => {
-                res.status(200).json({
-                    message: "Update Success",
-                    status: 200,
-                    data: result
+        if (req.file != null) {
+            const filename = Date.now().toString() + "." + req.file.originalname.split('.').pop();
+            const storageRef = ref(storage, `profile-picture/${filename}`);
+            try {
+                const metadata = {
+                    contentType: req.file.mimetype,
+                }
+                const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
+                const downloadURL = await getDownloadURL(snapshot.ref)
+                updates.profile_picture = downloadURL;
+                db.collection('user')
+                    .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
+                    .then(result => {
+                        res.status(200).json({
+                            message: "Update Success",
+                            status: 200,
+                            data: result
+                        })
+                    })
+                    .catch(err => {
+                        res.status(500).json({ error: 'Could not update the document' })
+                    })
+            } catch (error) {
+                res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku' });
+            }
+        } else {
+            db.collection('user')
+                .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
+                .then(result => {
+                    res.status(200).json({
+                        message: "Update Success",
+                        status: 200,
+                        data: result
+                    })
                 })
-            })
-            .catch(err => {
-                res.status(500).json({ error: 'Could not update the document' })
-            })
+                .catch(err => {
+                    res.status(500).json({ error: 'Could not update the document' })
+                })
+        }
     } else {
         res.status(500).json({ error: 'Not a valid document id' })
     }

@@ -229,7 +229,7 @@ const postBooks = async (req, res) => {
             data: result
         });
     } catch (error) {
-        res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku' });
+        res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku' + error });
     }
 }
 
