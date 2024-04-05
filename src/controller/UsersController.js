@@ -194,18 +194,20 @@ const updateOneUsers = async (req, res) => {
                 const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
                 const downloadURL = await getDownloadURL(snapshot.ref)
                 updates.profile_picture = downloadURL;
-                db.collection('user')
-                    .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
-                    .then(result => {
-                        res.status(200).json({
-                            message: "Update Success",
-                            status: 200,
-                            data: result
-                        })
-                    })
-                    .catch(err => {
-                        res.status(500).json({ error: 'Could not update the document' })
-                    })
+                await db.collection('user').updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates });
+                const dataUser = await db.collection('user').findOne({ _id: new ObjectId(req.params.id) });
+                delete dataUser.email;
+                delete dataUser.password;
+                delete dataUser.username;
+                delete dataUser.nama_lengkap;
+                delete dataUser.alamat;
+                delete dataUser.no_hp;
+                delete dataUser.index_level_roles;
+                res.status(200).json({
+                    message: "Update Success",
+                    status: 200,
+                    data: dataUser
+                })
             } catch (error) {
                 res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku' });
             }
