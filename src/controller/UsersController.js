@@ -121,6 +121,25 @@ const postUsers = async (req, res) => {
     }
 }
 
+const checkUsername = async (req, res) => {
+    const { username } = req.body;
+    try {
+        const existingUsername = await db.collection('user').findOne({ username });
+        if (existingUsername) {
+            return res.status(401).json({
+                message: "Username sudah dipakai!",
+                status: 401
+            });
+        }
+        res.status(200).json({
+            message: "success",
+            status: 200,
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Terjadi kesalahan saat melakukan pengecekan' });
+    }
+}
+
 const getOneUsers = async (req, res) => {
     if (ObjectId.isValid(req.params.id)) {
         try {
@@ -277,6 +296,7 @@ const loginUsers = async (req, res) => {
 module.exports = {
     getAllUsers,
     postUsers,
+    checkUsername,
     getOneUsers,
     updateOneUsers,
     deleteOneUsers,

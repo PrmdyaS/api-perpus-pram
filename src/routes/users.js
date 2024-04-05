@@ -8,6 +8,8 @@ router.get('/', UserController.getAllUsers)
 
 router.post('/', UserController.postUsers)
 
+router.get('/username', UserController.checkUsername)
+
 router.get('/:id', UserController.getOneUsers)
 
 router.patch('/:id', upload.single('profile_picture'), UserController.updateOneUsers)
