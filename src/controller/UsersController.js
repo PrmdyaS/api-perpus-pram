@@ -76,7 +76,7 @@ const postUsers = async (req, res) => {
         const existingEmail = await db.collection('user').findOne({ email });
         if (existingEmail) {
             return res.status(401).json({
-                message: "Email sudah terdaftar",
+                message: "Email sudah terdaftar!",
                 status: 401
             });
         }
@@ -84,7 +84,7 @@ const postUsers = async (req, res) => {
         if (username == '') {
             res.status(201).json(
                 {
-                    message: "Username kosong",
+                    message: "Username kosong!",
                     status: 201,
                 }
             );
