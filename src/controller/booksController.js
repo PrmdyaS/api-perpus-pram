@@ -31,9 +31,12 @@ const getAllBooks = (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const penerbit = req.query.penerbit;
+    const subCategoriesId = req.query.sub_categories_id;
     let query = {};
     if (penerbit) {
         query = { penerbit: penerbit };
+    } else if (subCategoriesId) {
+        query = { sub_categories_id: subCategoriesId };
     }
 
     let books = [];
@@ -233,27 +236,57 @@ const postBooks = async (req, res) => {
     }
 }
 
-const getOneBooks = (req, res) => {
-    if (ObjectId.isValid(req.params.id)) {
-        db.collection('books')
-            .findOne({ _id: new ObjectId(req.params.id) })
-            .then(doc => {
+const getOneBooks = async (req, res) => {
+    try {
+        if (ObjectId.isValid(req.params.id)) {
+            const cursor = db.collection('books').aggregate([
+                {
+                    $match: { _id: new ObjectId(req.params.id) }
+                },
+                {
+                    $lookup: {
+                        from: 'genres',
+                        localField: "genres_id",
+                        foreignField: "_id",
+                        as: "genres"
+                    }
+                },
+                {
+                    $project: {
+                        created_at: 0,
+                        updated_at: 0,
+                        sub_categories_id: 0,
+                        genres_id: 0,
+                    }
+                },
+            ]);
+            const books = await cursor.next();
+            if (books) {
                 res.status(200).json({
                     message: "success",
                     status: 200,
-                    data: doc
-                })
-            })
-            .catch(err => {
-                res.status(500).json({ error: 'Could not fetch the document' })
-            })
-    } else {
-        res.status(500).json({ error: 'Not a valid document id' })
+                    data: books
+                });
+            }
+        } else {
+            res.status(500).json({ error: 'Not a valid document id' })
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not find the document' });
     }
 }
 
-const updateOneBooks = (req, res) => {
+const updateOneBooks = async (req, res) => {
+    const { genres_id } = req.body
     const updates = req.body
+    delete updates.genres_id;
+    const ObjectIdGenres = [];
+    if (genres_id && genres_id.length > 0) {
+        genres_id.forEach(id => {
+            ObjectIdGenres.push(new ObjectId(id));
+        });
+    }
+    updates.genres_id = ObjectIdGenres;
     const moments = moment().format();
     updates.updated_at = moments;
     if (ObjectId.isValid(req.params.id)) {

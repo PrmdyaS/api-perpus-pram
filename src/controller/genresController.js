@@ -8,51 +8,27 @@ connectToDb((err) => {
     }
 })
 
-const getAllSubCategories = async (req, res) => {
-    try {
-        const cursor = db.collection('sub_categories').aggregate([
-            {
-                $lookup: {
-                    from: 'categories',
-                    as: 'categories',
-                    let: { categoriesId: "$categories_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$_id", "$$categoriesId"] }
-                                    ]
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-            { $sort: { index: -1 } }
-        ]);
-        const favorites = await cursor.toArray();
-
-        if (favorites) {
+const getAllGenres = async (req, res) => {
+    let genres = [];
+    db.collection('genres')
+        .find()
+        .forEach(genre => genres.push(genre))
+        .then(() => {
             res.status(200).json({
                 message: "success",
                 status: 200,
-                data: favorites
+                data: genres
             });
-        }
-    } catch (error) {
-        res.status(500).json({ error: 'Terjadi kesalahan saat mengambil data favorit' });
-    }
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
 }
 
-const postSubCategories = async (req, res) => {
-    const { categories_id, sub_categories_name } = req.body
-    const sub_categories = {
-        categories_id: new ObjectId(categories_id),
-        sub_categories_name
-    }
+const postGenres = async (req, res) => {
+    const genres = req.body
     try {
-        const result = await db.collection('sub_categories').insertOne(sub_categories);
+        const result = await db.collection('genres').insertOne(genres);
         res.json({
             message: "Create Success",
             status: 200,
@@ -63,10 +39,10 @@ const postSubCategories = async (req, res) => {
     }
 }
 
-const updateOneSubCategories = (req, res) => {
+const updateOneGenres = (req, res) => {
     const updates = req.body
     if (ObjectId.isValid(req.params.id)) {
-        db.collection('sub_categories')
+        db.collection('genres')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
             .then(result => {
                 res.status(200).json({
@@ -83,9 +59,9 @@ const updateOneSubCategories = (req, res) => {
     }
 }
 
-const deleteOneSubCategories = (req, res) => {
+const deleteOneGenres = (req, res) => {
     if (ObjectId.isValid(req.params.id)) {
-        db.collection('sub_categories')
+        db.collection('genres')
             .deleteOne({ _id: new ObjectId(req.params.id) })
             .then(result => {
                 res.status(200).json({
@@ -103,8 +79,8 @@ const deleteOneSubCategories = (req, res) => {
 }
 
 module.exports = {
-    getAllSubCategories,
-    postSubCategories,
-    updateOneSubCategories,
-    deleteOneSubCategories,
+    getAllGenres,
+    postGenres,
+    updateOneGenres,
+    deleteOneGenres,
 }

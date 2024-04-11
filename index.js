@@ -7,6 +7,7 @@ const favoritesRoutes = require('./src/routes/favorites')
 const categoriesRoutes = require('./src/routes/categories')
 const subCategoriesRoutes = require('./src/routes/subCategories')
 const borrowBooksRoutes = require('./src/routes/borrowBooks')
+const genresRoutes = require('./src/routes/genres')
 
 const app = express()
 app.use(express.json())
@@ -18,6 +19,7 @@ app.use('/favorites', favoritesRoutes)
 app.use('/categories', categoriesRoutes)
 app.use('/sub-categories', subCategoriesRoutes) 
 app.use('/borrow-books', borrowBooksRoutes)
+app.use('/genres', genresRoutes)
 
 connectToDb((err) => {
     if (!err) {
