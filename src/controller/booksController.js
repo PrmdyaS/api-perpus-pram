@@ -32,11 +32,14 @@ const getAllBooks = (req, res) => {
     const skip = (page - 1) * limit;
     const penerbit = req.query.penerbit;
     const subCategoriesId = req.query.sub_categories_id;
+    const genres_id = req.query.genres_id;
     let query = {};
     if (penerbit) {
         query = { penerbit: penerbit };
     } else if (subCategoriesId) {
         query = { sub_categories_id: subCategoriesId };
+    } else if (genres_id) {
+        query = { genres_id: { $elemMatch: { $eq: new ObjectId(genres_id) } } }
     }
 
     let books = [];
@@ -201,7 +204,6 @@ const getBooksTerbaru = (req, res) => {
             res.status(500).json({ error: 'Could not fetch the documents' });
         });
 };
-
 
 const postBooks = async (req, res) => {
     const { judul, penulis, penerbit, tahun_terbit, deskripsi_buku, rating } = req.body;
