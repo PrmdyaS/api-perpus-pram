@@ -266,6 +266,11 @@ const getOneBorrowBooks = async (req, res) => {
                     status: 200,
                     data: borrowBooks
                 });
+            } else {
+                res.status(400).json({
+                    message: "Data tidak ditemukan",
+                    status: 400
+                });
             }
         } else {
             res.status(500).json({ error: 'Not a valid document id' })
