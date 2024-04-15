@@ -8,6 +8,7 @@ const categoriesRoutes = require('./src/routes/categories')
 const subCategoriesRoutes = require('./src/routes/subCategories')
 const borrowBooksRoutes = require('./src/routes/borrowBooks')
 const genresRoutes = require('./src/routes/genres')
+const reviewsRoutes = require('./src/routes/reviews')
 const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb')
 
@@ -24,6 +25,7 @@ app.use('/categories', categoriesRoutes)
 app.use('/sub-categories', subCategoriesRoutes)
 app.use('/borrow-books', borrowBooksRoutes)
 app.use('/genres', genresRoutes)
+app.use('/reviews', reviewsRoutes)
 
 connectToDb((err) => {
     if (!err) {
