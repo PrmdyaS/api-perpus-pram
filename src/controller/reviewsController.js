@@ -326,7 +326,7 @@ const postReviews = async (req, res) => {
     }
 }
 
-const updateOneReviews = (req, res) => {
+const updateOneReviews = async (req, res) => {
     const { rating, review_text } = req.body
     const moments = moment().format();
     const updates = {
@@ -336,17 +336,94 @@ const updateOneReviews = (req, res) => {
     }
     if (ObjectId.isValid(req.params.id)) {
         db.collection('reviews')
-            .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
-            .then(result => {
-                res.status(200).json({
-                    message: "Update Success",
-                    status: 200,
-                    data: result
-                })
+        .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
+        .then(result => {
+            res.status(200).json({
+                message: "Update Success",
+                status: 200,
+                data: result
             })
-            .catch(err => {
-                res.status(500).json({ error: 'Could not update the document' })
-            })
+        })
+        .catch(err => {
+            res.status(500).json({ error: 'Could not update the document' })
+        })
+        const cursor = db.collection('reviews').aggregate([
+            {
+                $match: { _id: new ObjectId(req.params.id) }
+            },
+            {
+                $lookup: {
+                    from: 'borrow_books',
+                    localField: 'borrow_books_id',
+                    foreignField: '_id',
+                    as: 'borrow_books',
+                    pipeline: [
+                        {
+                            $project: {
+                                books_id: 1,
+                            }
+                        },
+                    ]
+                }
+            },
+            {
+                $set: {
+                    borrow_books: { $arrayElemAt: ["$borrow_books", 0] }
+                }
+            },
+            {
+                $project: {
+                    rating: 0,
+                    review_text: 0,
+                    created_at: 0,
+                    updated_at: 0
+                }
+            },
+        ]);
+        const reviewList = await cursor.toArray();
+        const booksId = reviewList.map(review => review.borrow_books.books_id.toString());
+        const cursor1 = db.collection('reviews').aggregate([
+            {
+                $lookup: {
+                    from: 'borrow_books',
+                    localField: 'borrow_books_id',
+                    foreignField: '_id',
+                    as: 'borrow_books',
+                    pipeline: [
+                        {
+                            $project: {
+                                books_id: 1,
+                            }
+                        },
+                    ]
+                }
+            },
+            {
+                $set: {
+                    borrow_books: { $arrayElemAt: ["$borrow_books", 0] }
+                }
+            },
+            {
+                $match: {
+                    "borrow_books.books_id": new ObjectId(booksId[0])
+                }
+            },
+            {
+                $project: {
+                    review_text: 0,
+                    created_at: 0,
+                    updated_at: 0
+                }
+            },
+        ]);
+        const ratingList = await cursor1.toArray();
+        const totalRating = ratingList.reduce((total, item) => total + item.rating, 0);
+        const averageRating = totalRating / ratingList.length;
+        const updatesBooks = {
+            rating: averageRating.toFixed(1),
+            updated_at: moments
+        }
+        db.collection('books').updateOne({ _id: new ObjectId(booksId[0]) }, { $set: updatesBooks })
     } else {
         res.status(500).json({ error: 'Not a valid document id' })
     }
