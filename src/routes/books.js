@@ -8,6 +8,8 @@ router.get('/', booksController.getAllBooks)
 
 router.get('/rating-tertinggi', booksController.getBooksRatingTertinggi)
 
+router.get('/menu-book', booksController.getBooksMenu)
+
 router.get('/terbaru', booksController.getBooksTerbaru)
 
 router.get('/search', booksController.searchBooks)

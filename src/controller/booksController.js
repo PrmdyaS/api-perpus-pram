@@ -172,6 +172,37 @@ const getBooksRatingTertinggi = (req, res) => {
         });
 };
 
+const getBooksMenu = (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let books = [];
+    db.collection('books')
+        .find()
+        .sort({ created_at: -1 })
+        .skip(skip)
+        .limit(limit)
+        .forEach(book => {
+            books.push({
+                _id: book._id,
+                judul: book.judul,
+                penulis: book.penulis,
+                sampul_buku: book.sampul_buku,
+            });
+        })
+        .then(() => {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: books
+            });
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
+};
+
 const getBooksTerbaru = (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -331,6 +362,7 @@ const deleteOneBooks = (req, res) => {
 module.exports = {
     getAllBooks,
     getBooksRatingTertinggi,
+    getBooksMenu,
     getBooksTerbaru,
     postBooks,
     getOneBooks,
