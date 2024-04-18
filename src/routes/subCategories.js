@@ -4,6 +4,8 @@ const SubCategoriesController = require('../controller/subCategoriesController')
 
 router.get('/', SubCategoriesController.getAllSubCategories)
 
+router.get('/list/', SubCategoriesController.getSubCategoriesList)
+
 router.post('/', SubCategoriesController.postSubCategories)
 
 router.patch('/:id', SubCategoriesController.updateOneSubCategories)

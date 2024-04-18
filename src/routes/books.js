@@ -18,6 +18,8 @@ router.get('/search-data', booksController.searchDataBooks)
 
 router.post('/', upload.single('sampul_buku'), booksController.postBooks)
 
+router.get('/all/:id', booksController.getOneBooksAll)
+
 router.get('/:id', booksController.getOneBooks)
 
 router.patch('/:id', booksController.updateOneBooks)

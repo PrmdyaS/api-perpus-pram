@@ -45,6 +45,29 @@ const getAllSubCategories = async (req, res) => {
     }
 }
 
+const getSubCategoriesList = async (req, res) => {
+    let sub_categories = [];
+    db.collection('sub_categories')
+        .find()
+        .sort({ sub_categories_name: -1 })
+        .forEach(sub_categori => {
+            sub_categories.push({
+                _id: sub_categori._id,
+                sub_categories_name: sub_categori.sub_categories_name,
+            });
+        })
+        .then(() => {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: sub_categories
+            });
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' });
+        });
+}
+
 const postSubCategories = async (req, res) => {
     const { categories_id, sub_categories_name } = req.body
     const sub_categories = {
@@ -104,6 +127,7 @@ const deleteOneSubCategories = (req, res) => {
 
 module.exports = {
     getAllSubCategories,
+    getSubCategoriesList,
     postSubCategories,
     updateOneSubCategories,
     deleteOneSubCategories,

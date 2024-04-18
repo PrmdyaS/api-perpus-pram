@@ -237,24 +237,31 @@ const getBooksTerbaru = (req, res) => {
 };
 
 const postBooks = async (req, res) => {
-    const { judul, penulis, penerbit, tahun_terbit, deskripsi_buku, rating } = req.body;
+    const { judul, penulis, penerbit, tahun_terbit, deskripsi_buku, sub_categories_id, genres_id } = req.body;
     const filename = Date.now().toString() + "." + req.file.originalname.split('.').pop();
     const storageRef = ref(storage, `cover-book/${filename}`);
     const moments = moment().format();
+    const ObjectIdGenres = [];
     try {
         const metadata = {
-            contentType: req.file.mimetype,
+            contentType: 'image/jpeg',
         }
         const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
         const downloadURL = await getDownloadURL(snapshot.ref)
+        if (genres_id && genres_id.length > 0) {
+            genres_id.forEach(id => {
+                ObjectIdGenres.push(new ObjectId(id));
+            });
+        }
         const newBook = {
             judul,
             penulis,
             penerbit,
             tahun_terbit,
-            deskripsi_buku,
+            sub_categories_id,
+            genres_id: ObjectIdGenres,
             sampul_buku: downloadURL,
-            rating,
+            deskripsi_buku,
             created_at: moments,
             updated_at: moments,
         };
@@ -266,6 +273,75 @@ const postBooks = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku' + error });
+    }
+}
+
+const getOneBooksAll = async (req, res) => {
+    try {
+        if (ObjectId.isValid(req.params.id)) {
+            const cursor = db.collection('books').aggregate([
+                {
+                    $match: { _id: new ObjectId(req.params.id) }
+                },
+                {
+                    $lookup: {
+                        from: 'sub_categories',
+                        as: 'sub_categories',
+                        let: { subCategoriesId: "$sub_categories_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$_id", "$$subCategoriesId"] }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                $project: {
+                                    categories_id: 0,
+                                    index: 0,
+                                }
+                            },
+                        ]
+                    }
+                },
+                {
+                    $set: {
+                        sub_categories: { $arrayElemAt: ["$sub_categories", 0] }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'genres',
+                        localField: "genres_id",
+                        foreignField: "_id",
+                        as: "genres"
+                    }
+                },
+                {
+                    $project: {
+                        created_at: 0,
+                        updated_at: 0,
+                        sub_categories_id: 0,
+                        genres_id: 0,
+                    }
+                },
+            ]);
+            const books = await cursor.next();
+            if (books) {
+                res.status(200).json({
+                    message: "success",
+                    status: 200,
+                    data: books
+                });
+            }
+        } else {
+            res.status(500).json({ error: 'Not a valid document id' })
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not find the document' });
     }
 }
 
@@ -365,6 +441,7 @@ module.exports = {
     getBooksMenu,
     getBooksTerbaru,
     postBooks,
+    getOneBooksAll,
     getOneBooks,
     updateOneBooks,
     deleteOneBooks,
