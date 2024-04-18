@@ -258,7 +258,7 @@ const postBooks = async (req, res) => {
             penulis,
             penerbit,
             tahun_terbit,
-            sub_categories_id,
+            sub_categories_id: new ObjectId(sub_categories_id),
             genres_id: ObjectIdGenres,
             sampul_buku: downloadURL,
             deskripsi_buku,
@@ -386,18 +386,24 @@ const getOneBooks = async (req, res) => {
 }
 
 const updateOneBooks = async (req, res) => {
-    const { genres_id } = req.body
-    const updates = req.body
-    delete updates.genres_id;
+    const { judul, penulis, penerbit, tahun_terbit, sub_categories_id, genres_id, deskripsi_buku } = req.body
     const ObjectIdGenres = [];
     if (genres_id && genres_id.length > 0) {
         genres_id.forEach(id => {
             ObjectIdGenres.push(new ObjectId(id));
         });
     }
-    updates.genres_id = ObjectIdGenres;
     const moments = moment().format();
-    updates.updated_at = moments;
+    const updates = {
+        judul, 
+        penulis, 
+        penerbit, 
+        tahun_terbit,
+        deskripsi_buku,
+        sub_categories_id: new ObjectId(sub_categories_id),
+        genres_id: ObjectIdGenres,
+        updated_at: moments
+    }
     if (ObjectId.isValid(req.params.id)) {
         db.collection('books')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
