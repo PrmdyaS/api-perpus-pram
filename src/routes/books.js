@@ -22,7 +22,7 @@ router.get('/all/:id', booksController.getOneBooksAll)
 
 router.get('/:id', booksController.getOneBooks)
 
-router.patch('/:id', booksController.updateOneBooks)
+router.patch('/:id', upload.single('sampul_buku'), booksController.updateOneBooks)
 
 router.delete('/:id', booksController.deleteOneBooks)
 

@@ -6,11 +6,15 @@ const upload = multer({storage: multer.memoryStorage()})
 
 router.get('/', UserController.getAllUsers)
 
+router.get('/list-users/', UserController.getAllListUsers)
+
 router.post('/', UserController.postUsers)
 
 router.get('/username', UserController.checkUsername)
 
 router.get('/:id', UserController.getOneUsers)
+
+router.patch('/roles', UserController.updateRoleUsers)
 
 router.patch('/:id', upload.single('profile_picture'), UserController.updateOneUsers)
 

@@ -69,6 +69,34 @@ const getAllUsers = async (req, res) => {
     }
 }
 
+const getAllListUsers = async (req, res) => {
+    let user = []
+    db.collection('user')
+        .find()
+        .sort({ index_level_roles: -1 })
+        .forEach(users => {
+            user.push({
+                _id: users._id,
+                username: users.username,
+                email: users.email,
+                profile_picture: users.profile_picture,
+                index_level_roles: users.index_level_roles,
+            });
+        })
+        .then(() => {
+            res.status(200).json(
+                {
+                    message: "success",
+                    status: 200,
+                    data: user
+                }
+            )
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Could not fetch the documents' })
+        })
+}
+
 const postUsers = async (req, res) => {
     const { email, password, username, nama_lengkap, alamat, no_hp, index_level_roles, profile_picture } = req.body;
 
@@ -200,6 +228,27 @@ const getOneUsers = async (req, res) => {
     }
 }
 
+const updateRoleUsers = (req, res) => {
+    const { updates } = req.body
+    if (updates.length > 0) {
+        updates.forEach(update => {
+            updateArray = {
+                index_level_roles: update.index_level_roles
+            }
+            db.collection('user').updateOne({ _id: new ObjectId(update._id) }, { $set: updateArray})
+        });
+        res.status(200).json({
+            message: "Update role berhasil",
+            status: 200,
+        })
+    } else {
+        res.status(200).json({
+            message: "Role kosong",
+            status: 200,
+        })
+    }
+}
+
 const updateOneUsers = async (req, res) => {
     const updates = req.body
     if (ObjectId.isValid(req.params.id)) {
@@ -295,9 +344,11 @@ const loginUsers = async (req, res) => {
 
 module.exports = {
     getAllUsers,
+    getAllListUsers,
     postUsers,
     checkUsername,
     getOneUsers,
+    updateRoleUsers,
     updateOneUsers,
     deleteOneUsers,
     loginUsers,

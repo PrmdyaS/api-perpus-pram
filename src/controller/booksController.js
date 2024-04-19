@@ -3,7 +3,6 @@ const { ObjectId } = require('mongodb')
 const firebase = require('firebase/app')
 const { getStorage, ref, uploadBytesResumable, getDownloadURL } = require('firebase/storage')
 const moment = require('moment-timezone');
-
 moment.tz.setDefault('Asia/Jakarta');
 
 let db
@@ -37,7 +36,7 @@ const getAllBooks = (req, res) => {
     if (penerbit) {
         query = { penerbit: penerbit };
     } else if (subCategoriesId) {
-        query = { sub_categories_id: subCategoriesId };
+        query = { sub_categories_id: new ObjectId(subCategoriesId) };
     } else if (genres_id) {
         query = { genres_id: { $elemMatch: { $eq: new ObjectId(genres_id) } } }
     }
@@ -174,7 +173,7 @@ const getBooksRatingTertinggi = (req, res) => {
 
 const getBooksMenu = (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 30;
     const skip = (page - 1) * limit;
 
     let books = [];
@@ -248,10 +247,14 @@ const postBooks = async (req, res) => {
         }
         const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
         const downloadURL = await getDownloadURL(snapshot.ref)
-        if (genres_id && genres_id.length > 0) {
+        if (genres_id && genres_id.length > 0 && !/^[a-z0-9]{24}$/.test(genres_id)) {
             genres_id.forEach(id => {
                 ObjectIdGenres.push(new ObjectId(id));
             });
+        } else if (/^[a-z0-9]{24}$/.test(genres_id)) {
+            ObjectIdGenres.push(new ObjectId(genres_id));
+        } else {
+            return res.status(400).json({ error: 'genres_id harus terdiri dari 24 karakter alfanumerik' });
         }
         const newBook = {
             judul,
@@ -272,7 +275,7 @@ const postBooks = async (req, res) => {
             data: result
         });
     } catch (error) {
-        res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku' + error });
+        res.status(500).json({ error: 'Terjadi kesalahan saat melakukan tambah buku'});
     }
 }
 
@@ -388,37 +391,82 @@ const getOneBooks = async (req, res) => {
 const updateOneBooks = async (req, res) => {
     const { judul, penulis, penerbit, tahun_terbit, sub_categories_id, genres_id, deskripsi_buku } = req.body
     const ObjectIdGenres = [];
-    if (genres_id && genres_id.length > 0) {
+    if (genres_id && genres_id.length > 0 && !/^[a-z0-9]{24}$/.test(genres_id)) {
         genres_id.forEach(id => {
             ObjectIdGenres.push(new ObjectId(id));
         });
+    } else if (/^[a-z0-9]{24}$/.test(genres_id)) {
+        ObjectIdGenres.push(new ObjectId(genres_id));
+    } else {
+        return res.status(400).json({ error: 'genres_id harus terdiri dari 24 karakter alfanumerik' });
     }
     const moments = moment().format();
-    const updates = {
-        judul, 
-        penulis, 
-        penerbit, 
-        tahun_terbit,
-        deskripsi_buku,
-        sub_categories_id: new ObjectId(sub_categories_id),
-        genres_id: ObjectIdGenres,
-        updated_at: moments
-    }
-    if (ObjectId.isValid(req.params.id)) {
-        db.collection('books')
-            .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
-            .then(result => {
-                res.status(200).json({
-                    message: "Update Success",
-                    status: 200,
-                    data: result
-                })
-            })
-            .catch(err => {
-                res.status(500).json({ error: 'Could not update the document' })
-            })
-    } else {
-        res.status(500).json({ error: 'Not a valid document id' })
+    try {
+        if (req.file != null) {
+            const filename = Date.now().toString() + "." + req.file.originalname.split('.').pop();
+            const storageRef = ref(storage, `cover-book/${filename}`);
+            const metadata = {
+                contentType: 'image/jpeg',
+            }
+            const snapshot = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
+            const downloadURL = await getDownloadURL(snapshot.ref)
+            const updates = {
+                judul,
+                penulis,
+                penerbit,
+                tahun_terbit,
+                deskripsi_buku,
+                sampul_buku: downloadURL,
+                sub_categories_id: new ObjectId(sub_categories_id),
+                genres_id: ObjectIdGenres,
+                updated_at: moments
+            }
+            if (ObjectId.isValid(req.params.id)) {
+                db.collection('books')
+                    .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
+                    .then(result => {
+                        res.status(200).json({
+                            message: "Update Success",
+                            status: 200,
+                            data: result
+                        })
+                    })
+                    .catch(err => {
+                        res.status(500).json({ error: 'Could not update the document' })
+                    })
+            } else {
+                res.status(500).json({ error: 'Not a valid document id' })
+            }
+        } else {
+            const updates = {
+                judul,
+                penulis,
+                penerbit,
+                tahun_terbit,
+                deskripsi_buku,
+                sub_categories_id: new ObjectId(sub_categories_id),
+                genres_id: ObjectIdGenres,
+                updated_at: moments
+            }
+            if (ObjectId.isValid(req.params.id)) {
+                db.collection('books')
+                    .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
+                    .then(result => {
+                        res.status(200).json({
+                            message: "Update Success",
+                            status: 200,
+                            data: result
+                        })
+                    })
+                    .catch(err => {
+                        res.status(500).json({ error: 'Could not update the document' })
+                    })
+            } else {
+                res.status(500).json({ error: 'Not a valid document id' })
+            }
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Terjadi kesalahan saat melakukan update buku ' + error });
     }
 }
 
