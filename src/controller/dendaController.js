@@ -55,7 +55,7 @@ const postDenda = async (req, res) => {
         const downloadURL = await getDownloadURL(snapshot.ref)
         const newDenda = {
             payment_method,
-            user_id_officer,
+            user_id_officer: new ObjectId(user_id_officer),
             payment_date: moments,
             bukti_pembayaran: downloadURL,
         };

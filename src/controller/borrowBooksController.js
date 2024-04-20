@@ -154,6 +154,129 @@ const getBorrowBooksLaporan = async (req, res) => {
     }
 }
 
+const getBorrowBooksLaporanDenda = async (req, res) => {
+    try {
+        const cursor = db.collection('borrow_books').aggregate([
+            {
+                $match: {
+                    status: { $in: ["Denda Lunas"] }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'user',
+                    as: 'users',
+                    let: { usersId: "$users_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$_id", "$$usersId"] }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                username: 1,
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $set: {
+                    users: { $arrayElemAt: ["$users", 0] }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'denda',
+                    as: 'dendas',
+                    let: { dendaId: "$denda_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$_id", "$$dendaId"] }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                payment_method: 1,
+                                payment_date: 1,
+                                user_id_officer: 1,
+                                bukti_pembayaran: 1,
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'user',
+                                as: 'officer',
+                                let: { userIdOfficer: "$user_id_officer" },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ["$_id", "$$userIdOfficer"] }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        $project: {
+                                            username: 1,
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            $set: {
+                                officer: { $arrayElemAt: ["$officer", 0] }
+                            }
+                        },
+                    ]
+                }
+            },
+            {
+                $set: {
+                    dendas: { $arrayElemAt: ["$dendas", 0] }
+                }
+            },
+            {
+                $project: {
+                    users_id: 0,
+                    books_id: 0,
+                    created_at: 0,
+                    updated_at: 0,
+                    review: 0,
+                    denda_id: 0,
+                }
+            },
+            {
+                $sort: { borrowing_date: 1 }
+            }
+        ]);
+        const borrowBooks = await cursor.toArray();
+
+        if (borrowBooks) {
+            res.status(200).json({
+                message: "success",
+                status: 200,
+                data: borrowBooks
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Could not find the document' });
+    }
+}
+
 const getBorrowBooksUsers = async (req, res) => {
     try {
         if (ObjectId.isValid(req.params.id)) {
@@ -443,6 +566,7 @@ const deleteOneBorrowBooks = (req, res) => {
 module.exports = {
     getAllBorrowBooks,
     getBorrowBooksLaporan,
+    getBorrowBooksLaporanDenda,
     postAllBorrowBooks,
     getBorrowBooksUsers,
     getHistoryBorrowBooksUsers,

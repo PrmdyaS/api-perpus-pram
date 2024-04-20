@@ -6,6 +6,8 @@ router.get('/', BorrowBooksController.getAllBorrowBooks)
 
 router.get('/laporan', BorrowBooksController.getBorrowBooksLaporan)
 
+router.get('/laporan-denda', BorrowBooksController.getBorrowBooksLaporanDenda)
+
 router.post('/', BorrowBooksController.postAllBorrowBooks)
 
 router.get('/users/:id', BorrowBooksController.getBorrowBooksUsers)
