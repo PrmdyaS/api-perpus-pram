@@ -397,7 +397,12 @@ const postAllBorrowBooks = async (req, res) => {
 }
 
 const updateOneBorrowBooks = (req, res) => {
+    const { denda_id } = req.body
     const updates = req.body
+    if (denda_id) {
+        delete updates.denda_id;
+        updates.denda_id = new ObjectId(denda_id);
+    }
     if (ObjectId.isValid(req.params.id)) {
         db.collection('borrow_books')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
