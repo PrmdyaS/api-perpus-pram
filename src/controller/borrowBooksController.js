@@ -136,6 +136,9 @@ const getBorrowBooksLaporan = async (req, res) => {
                     denda: 0,
                 }
             },
+            {
+                $sort: { borrowing_date: 1 }
+            }
         ]);
         const borrowBooks = await cursor.toArray();
 
