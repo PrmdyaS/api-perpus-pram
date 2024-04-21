@@ -76,8 +76,6 @@ const searchBooks = (req, res) => {
         query = {
             $or: [
                 { judul: { $regex: q, $options: 'i' } },
-                { penerbit: { $regex: q, $options: 'i' } },
-                { penulis: { $regex: q, $options: 'i' } }
             ]
         };
     }
@@ -106,8 +104,6 @@ const searchDataBooks = (req, res) => {
         query = {
             $or: [
                 { judul: { $regex: q, $options: 'i' } },
-                { penerbit: { $regex: q, $options: 'i' } },
-                { penulis: { $regex: q, $options: 'i' } }
             ]
         };
     }
